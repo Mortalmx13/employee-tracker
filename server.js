@@ -27,17 +27,25 @@ const fn = {
       return init();
     });
   },
-//   viewAllEmployees() {
-//     db.query('SELECT e.id,CONCAT(e.first_name," ", e.last_name) AS name.role.title AS role, '  (err, results) {
-//       if (err) return console.error(err);
-//       console.table(results);
-//       return init();
-//     });
-//   },
-  addADepartment(name) {
-    db.query('SELECT * FROM students', function (err, results) {
+  viewAllEmployees() {
+    db.query(`SELECT employee.id,CONCAT(employee.first_name," ", employee.last_name) AS name.employee,
+    AS name.role.title AS role,
+    CONCAT(manager.first_name," ", manager.last_name) AS name.manager,
+    LEFT JOIN role ON employee.role_id = role.id,
+    LEFT JOIN employee manager ON employee.manager_id = manager.id;
+     `,
+       (err, results) =>{
       if (err) return console.error(err);
       console.table(results);
+      return init();
+    });
+  },
+  addADepartment(name) {
+    const department = name.trim();
+     db.query('INSERT INTO department (name) VALUES (?)',  
+     (err, results) => {
+      if (err) return console.error(err);
+      console.log(`Added ${department}  to departments!`); 
       return init();
     });
   },
