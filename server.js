@@ -14,25 +14,25 @@ const db = mysql.createConnection(
 
 const fn = {
     viewAllDepartments() {
-    db.query('SELECT * FROM students', function (err, results) {
+    db.query('SELECT * FROM department', function (err, results) {
       if (err) return console.error(err);
       console.table(results);
       return init();
     });
   },
   viewAllRoles() {
-    db.query('SELECT * FROM students WHERE enrolled = 1', function (err, results) {
+    db.query('SELECT * FROM role', function (err, results) {
       if (err) return console.error(err);
       console.table(results);
       return init();
     });
   },
   viewAllEmployees() {
-    db.query(`SELECT employee.id,CONCAT(employee.first_name," ", employee.last_name) AS name.employee,
-    AS name.role.title AS role,
-    CONCAT(manager.first_name," ", manager.last_name) AS name.manager,
-    LEFT JOIN role ON employee.role_id = role.id,
-    LEFT JOIN employee manager ON employee.manager_id = manager.id;
+    db.query(`SELECT e.id,CONCAT(e.first_name," ", e.last_name) AS name,
+     role.title AS role,
+    CONCAT(m.first_name," ", m.last_name) AS manager_name,
+    LEFT JOIN role ON e.role_id = role.id,
+    LEFT JOIN e manager ON e.manager_id = m.id;
      `,
        (err, results) =>{
       if (err) return console.error(err);
@@ -42,29 +42,90 @@ const fn = {
   },
   addADepartment(name) {
     const department = name.trim();
-     db.query('INSERT INTO department (name) VALUES (?)',  
+     db.query('INSERT INTO department (name) VALUES (?)',department,  
      (err, results) => {
       if (err) return console.error(err);
       console.log(`Added ${department}  to departments!`); 
       return init();
     });
   },
-  addARole() {
-    db.query('SELECT * FROM students', function (err, results) {
+  addARole(answers) {
+    const title = answers.title.trim();
+    const salary = parseInt(answers.salary.trim());
+    const id = parseInt(answers.department);
+    db.query('INSERT INTO role(title, salary, department_id) VALUES(?,?,?)', [salary, id],
+    (err, results) => {
       if (err) return console.error(err);
-      console.table(results);
+      console.log(`Added ${title} to roles`);
       return init();
     });
   },
-  addAnEmployee() {
-    db.query('SELECT * FROM students', function (err, results) {
-      if (err) return console.error(err);
-      console.table(results);
-      return init();
-    });
-  },
-  updateAnEmployeeRole() {
-    db.query('SELECT * FROM students', function (err, results) {
+
+addManager(roles){
+db.query(`SELECT id, firrst_name, last_name FROM employee WHERE manager_id IS NULL`,
+(err, results) => {
+if (err) return console.error(err);
+      const managers = [{name: "none", value:null}];
+      results.forEach((person) => managers.push({name: person.first_name + ' ' + person.last_name}))
+      return this.promptAddEmployee(roles, managers);
+})
+},
+
+//prompts the user to inter the new aspect of the new employee
+promptAddEmployee(roles,managers){
+    inquirer.prompt([
+    {
+        type: 'input', name: 'fistName',message: "What is the employee's first name?",
+        validate: addFirst => {
+              if (addFirst) { return true; }
+                else {
+                  console.log('Please enter a first name');
+                  return false;
+              }
+            }
+          },
+          {
+        type: 'input',name: 'lastName',message: "What is the employee's last name?",
+        validate: addLast => {
+              if (addLast) {return true;} 
+              else {
+                console.log('Please enter a last name');
+                return false;
+              }
+            }
+          },
+          {
+            type: 'list',name: 'role',message: "What is the employees role?",choices: roles,
+            validate: role => {
+                  if (role) {return true;} 
+                  else {
+                    console.log('enter a role');
+                    return false;
+                  }
+                }
+              },
+              {
+                type: 'input',name: 'lastName',message: "Who is the employees manager?",choices: managers,
+            
+                      
+                    
+                  },
+        ])
+        .then((answers)=> this.addAnEmployee(answers))
+        .catch((err)=> console.log(err))
+},
+
+
+
+//add a new employee to the table
+  addAnEmployee(answers) {
+
+    const first = answers.first.trim();
+    const last = answers.last.trim();
+    const roleId = parseInt(answers.role);
+    const managerId = parseInt(answers.manager);
+    db.query('INSERT INTO employee (first_name, last_name, role_id, manager_id', 
+    (err, results) =>{
       if (err) return console.error(err);
       console.table(results);
       return init();
