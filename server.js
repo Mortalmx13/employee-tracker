@@ -46,34 +46,30 @@ const fn = {
       return init();
     });
   },
-  promptAddDepartment(){
+  addADepartment() {
     inquirer.prompt([
-    {
-        type: 'input', name: 'department',message: "What is the name of the department?",
-        validate: adddepartment => {
-              if (adddepartment) { return true; }
-                else {
-                  console.log('Please enter a department');
-                  return false;
-              }
-            }
-          },
-        ])
-        .then((name)=> this.addADepartment(name))
-        .catch((err)=> console.log(err))
-    },
-
-
-
-
-  addADepartment(name) {
-    const department = name.trim();
-     db.query('INSERT INTO department (name) VALUES (?)',department,  
+        {
+            type: 'input', name: 'adddepartment',message: "What is the name of the department?",
+            validate: adddepartment => {
+                  if (adddepartment) { return true; }
+                    else {
+                      console.log('Please enter a department');
+                      return false;
+                  }
+                }
+              },
+            ])
+    .then(answers => {
+        console.log(answers)
+     var sql = `INSERT INTO department (name)
+     VALUES (?)`;
+     db.query(sql, answers.adddepartment, 
      (err, results) => {
       if (err) return console.error(err);
-      console.log(`Added ${department}  to departments!`); 
-      return init();
+      console.log('Added '+ answers.adddepartment + ' to departments!'); 
+      viewAllDepartments();
     });
+    })
   },
 
   promptAddRole(){
