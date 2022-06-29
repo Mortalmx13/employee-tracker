@@ -14,32 +14,58 @@ const db = mysql.createConnection(
 
 const fn = {
     viewAllDepartments() {
-    db.query('SELECT * FROM department', function (err, results) {
+    db.query('SELECT * FROM department',  (err, results) => {
       if (err) return console.error(err);
       console.table(results);
       return init();
     });
   },
   viewAllRoles() {
-    db.query('SELECT * FROM role', function (err, results) {
+    db.query(`SELECT role.id, role.title,  department.name AS department, role.salary FROM department
+    LEFT JOIN role ON role.department_id = department.id
+    `, 
+     (err, results) => {
       if (err) return console.error(err);
       console.table(results);
       return init();
     });
   },
   viewAllEmployees() {
-    db.query(`SELECT e.id,CONCAT(e.first_name," ", e.last_name) AS name,
-     role.title AS role,
-    CONCAT(m.first_name," ", m.last_name) AS manager_name,
-    LEFT JOIN role ON e.role_id = role.id,
-    LEFT JOIN e manager ON e.manager_id = m.id;
-     `,
+    db.query(`SELECT e.id
+    ,CONCAT(e.first_name," ", e.last_name) AS name,
+     role.title AS title, department.name AS department,role.salary,
+     CONCAT(m.first_name," ", m.last_name) AS manager
+     FROM employee e
+    LEFT JOIN role ON  role.id = e.role_id 
+    LEFT JOIN department ON role.department_id = department.id
+     LEFT JOIN employee m ON e.manager_id = m.id `,
+
        (err, results) =>{
       if (err) return console.error(err);
       console.table(results);
       return init();
     });
   },
+  promptAddDepartment(){
+    inquirer.prompt([
+    {
+        type: 'input', name: 'department',message: "What is the name of the department?",
+        validate: adddepartment => {
+              if (adddepartment) { return true; }
+                else {
+                  console.log('Please enter a department');
+                  return false;
+              }
+            }
+          },
+        ])
+        .then((name)=> this.addADepartment(name))
+        .catch((err)=> console.log(err))
+    },
+
+
+
+
   addADepartment(name) {
     const department = name.trim();
      db.query('INSERT INTO department (name) VALUES (?)',department,  
@@ -49,6 +75,47 @@ const fn = {
       return init();
     });
   },
+
+  promptAddRole(){
+    inquirer.prompt([
+    {
+        type: 'input', name: 'title',message: "What is the title?",
+        validate: addtitle => {
+              if (addtitle) { return true; }
+                else {
+                  console.log('Please enter a title');
+                  return false;
+              }
+            }
+          },
+          {
+            type: 'input', name: 'salary',message: "What is the salary?",
+            validate: addsalary => {
+                  if (addsalary) { return true; }
+                    else {
+                      console.log('Please enter a salary');
+                      return false;
+                  }
+                }
+              },
+              {
+                type: 'input', name: 'role',message: "What is the name of the department?",
+                validate: addrole => {
+                      if (addrole) { return true; }
+                        else {
+                          console.log('Please enter a department');
+                          return false;
+                      }
+                    }
+                  },
+          
+          
+        ])
+        .then((name)=> this.addADepartment(name))
+        .catch((err)=> console.log(err))
+    },
+
+
   addARole(answers) {
     const title = answers.title.trim();
     const salary = parseInt(answers.salary.trim());
