@@ -145,7 +145,7 @@ db.query("SELECT * FROM EMPLOYEE", (err, emplRes) => {
         name: 'None',
         value: 0
       }
-    ]; //an employee could have no manager
+    ]; 
     emplRes.forEach(({ first_name, last_name, id }) => {
         managers.push({
         name: first_name + " " + last_name,
@@ -153,7 +153,7 @@ db.query("SELECT * FROM EMPLOYEE", (err, emplRes) => {
       });
     });
     
-    //get all the role list to make choice of employee's role
+    //gets the list of roles from the data
     db.query("SELECT * FROM ROLE", (err, rolRes) => {
       if (err) throw err;
       const roles = [];
@@ -211,8 +211,70 @@ db.query("SELECT * FROM EMPLOYEE", (err, emplRes) => {
 
 },
 
+//updates the emplyees role
+updateAnEmployeeRole(){
+
+  
+        //gets the list of employees
+        db.query("SELECT * FROM EMPLOYEE", (err, emplRes) => {
+            if (err) return console.error(err);
+          const employeeChoice = [];
+          emplRes.forEach(({ first_name, last_name, id }) => {
+            employeeChoice.push({
+              name: first_name + " " + last_name,
+              value: id
+            });
+          });
+          
+          //gets the role list for the employees
+          db.query("SELECT * FROM ROLE", (err, rolRes) => {
+
+            if (err) return console.error(err);
+            const roleChoice = [];
+            rolRes.forEach(({ title, id }) => {
+              roleChoice.push({
+                name: title,
+                value: id
+                });
+              });
+           
 
 
+            let questions = [
+              {
+                type: "list",name: "id",choices: employeeChoice, message: "whose role do you want to update?"
+              },
+              {
+                type: "list", name: "role_id", choices: roleChoice,message: "what is the employee's new role?"
+              }
+            ]
+
+
+        
+            inquirer.prompt(questions)
+              .then(response => {
+                const query = `UPDATE EMPLOYEE SET ? WHERE ?? = ?;`;
+                db.query(query, [
+                  {role_id: response.role_id},
+                  "id",
+                  response.id
+                ], (err, res) => {
+
+                    if (err) return console.error(err);
+                  
+                  console.log("Updated employees role!");
+                  return init();
+                });
+              })
+              .catch(err => {
+                console.error(err);
+              });
+            })
+        });
+      
+      
+
+},
 
 
 exit() {
