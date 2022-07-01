@@ -1,5 +1,6 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
+const { title } = require('process');
 require('console.table');
 
 const db = mysql.createConnection(
@@ -24,7 +25,7 @@ const fn = {
   //used to see the roles which inclues title, salary, department_id
   viewAllRoles() {
     db.query(`SELECT role.id, role.title,  department.name AS department, role.salary FROM department
-    LEFT JOIN role ON role.department_id = department.id
+    LEFT JOIN role ON role.department_id = department.id ORDER BY role.id
     `, 
      (err, results) => {
       if (err) return console.error(err);
@@ -78,49 +79,50 @@ const fn = {
 
 
 //function for addeing a new role
-  addARole()  {
-    //get the list of all department with department_id to make the choices object list for prompt question
-    const departments = [];
-    db.query("SELECT * FROM DEPARTMENT", (err, results) => {
-        if (err) return console.error(err);
-  
-      results.forEach(dep => {
-        let obj = {
-          name: dep.name,
-          value: dep.id
-        }
-        departments.push(obj);
-      });
-  
-      //question list to get arguments for making new roles
-      let questions = [
-        {
-          type: "input",name: "addtitle ",message: "What is the title of the new role?"
-        },
-        {
-          type: "input",name: "addsalary ",message: "What is the salary of the new role?"
-        },
-        {
-          type: "list",name: "department",choices: departments,message: "Which department is this role in?"
-        }
-      ];
-  
-      inquirer.prompt(questions)
-      .then(response => {
-        const query = `INSERT INTO ROLE (title, salary, department_id) VALUES (?)`;
-        db.query(query, [[response.addtitle , response.addsalary , response.department]], (err, results) => {
-            if (err) return console.error(err);
-          console.log(`Successfully inserted ${response.addtitle } role at id ${results.insertId}`);
-        return init();
-        });
-      })
-      .catch(err => {
-        if (err) return console.error(err);
-      });
-     
+//function for addeing a new role
+addARole()  {
+  //get the list of all department with department_id to make the choices object list for prompt question
+  const departments = [];
+  db.query("SELECT * FROM DEPARTMENT", (err, results) => {
+      if (err) return console.error(err);
+
+    results.forEach(dep => {
+      let obj = {
+        name: dep.name,
+        value: dep.id
+      }
+      departments.push(obj);
     });
-    
-  },
+
+    //question list to get arguments for making new roles
+    let questions =[
+    {
+        type: 'input',name: 'title',message: "What is the title of the new role?",
+      },
+      {
+        type: 'input',name: 'salary',message: "What is the salary of the new role?",
+      },
+      {
+        type: 'list',name: 'department',choices: departments,message: "Which department is this role in?",
+      }
+    ]
+
+    inquirer.prompt(questions)
+    .then(response => {
+      const query = `INSERT INTO ROLE (title, salary, department_id) VALUES (?)`;
+      db.query(query, [[response.title , response.salary , response.department]], (err, results) => {
+          if (err) return console.error(err);
+        console.log(`Successfully inserted ${response.title } role at id ${results.insertId}`);
+      return init();
+      });
+    })
+    .catch(err => {
+      if (err) return console.error(err);
+    });
+
+  });
+
+},
 
 // addManager(roles){
 // db.query(`SELECT id, firrst_name, last_name FROM employee WHERE manager_id IS NULL`,

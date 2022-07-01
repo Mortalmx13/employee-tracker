@@ -10,9 +10,8 @@
 This assignmant required the user to make a data chart that will display updates to it and also let the user make updates to the chart.
 
 ## Visuals
-![Horiseon](/img/Desktop-screenshot%20(1).png)
+![Employee tracker](/img/Desktop-screenshot%20(1).png)
 
 ## Resources
-- [Live Site](https://mortalmx13.github.io/seo-refactor/)
 
 - [Respository](https://github.com/Mortalmx13/employee-tracker)
